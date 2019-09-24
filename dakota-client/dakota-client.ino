@@ -7,7 +7,7 @@ RF24 radio(7, 8);
 typedef enum
 {
   transmitting = 1,
-  listening
+  listening = 0,
 } mode;
 
 mode currentMode = listening;
@@ -52,7 +52,7 @@ void loop()
     {
       Serial.println(F("*** MUDANDO CLIENTE PARA MODO TRANSMISSÃO"));
     }
-    else if (role == transmitting)
+    else if (currentMode == transmitting)
     {
       Serial.println(F("*** MUDANDO CLIENTE PARA MODO LEITURA"));
     }
