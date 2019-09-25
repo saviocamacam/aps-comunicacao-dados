@@ -4,7 +4,7 @@
 /* CONFIGURAÇÃO DE HARDWARE: CONFIGURA O RÁDIO nRF24L01 EM BARRAMENTO SPI COM PINOS 7 & 8 */
 RF24 radio(7, 8);
 // ENDEREÇOS DE RÁDIO (PIPES) PARA DOIS NÓS SE COMUNICAREM
-byte addresses[][] = {"F0F0F0F0D2", "F0F0F0F0E1"};
+byte addresses[][11] = {"F0F0F0F0D2", "F0F0F0F0E1"};
 // DEFININDO OS MODOS QUE O NÓ PODE ASSUMIR
 typedef enum
 {
@@ -34,6 +34,10 @@ void setup()
 
   // CONFIGURA PLACA E INICIA O RÁDIO
   radio.begin();
+  //AMBOS OS RADIOS OUVEM OS MESMOS PIPES, MAS EM ENDEREÇOS OPOSTOS
+  radio.openWritingPipe(addresses[1]);
+  //ABRE UM PIPE DE LEITURA NO ENDEREÇO 0, PIPE 1
+  radio.openReadingPipe(1, addresses[0]);
   radio.startListening();
 }
 
@@ -47,17 +51,5 @@ void loop()
   // MODO DE ESCUTA
   if (currentMode == listening)
   {
-  }
-  //SERVIDOR EM MODO DE ESCUTA
-  if (Serial.available())
-  {
-    if (currentMode == listening)
-    {
-      Serial.println(F("*** MUDANDO SERVIDOR PARA MODO TRANSMISSÃO"));
-    }
-    else if (currentMode == transmitting)
-    {
-      Serial.println(F("*** MUDANDO SERVIDOR PARA MODO LEITURA"));
-    }
   }
 }
