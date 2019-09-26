@@ -53,7 +53,7 @@ void loop()
     {
       Serial.println(F("*** MUDANDO SERVIDOR PARA MODO TRANSMISSÃO"));
     }
-    else if (role == transmitting)
+    else if (currentMode == transmitting)
     {
       Serial.println(F("*** MUDANDO SERVIDOR PARA MODO LEITURA"));
     }
