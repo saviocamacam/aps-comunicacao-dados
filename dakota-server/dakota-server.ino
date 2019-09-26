@@ -8,6 +8,7 @@ byte addresses[][11] = {"F0F0F0F0D2", "F0F0F0F0E1"};
 // DEFININDO OS MODOS QUE O NÓ PODE ASSUMIR
 typedef enum
 {
+  bla = 200,
   transmitting = 1,
   listening
 } mode;
@@ -15,7 +16,7 @@ typedef enum
 mode currentMode = listening;
 const char *myAddress;
 
-//FUNÇÃO QUE INICIA E MANTÉM A TABELA DE ENDEREÇOS DOS CLIENTES;
+//FUNÇÃO QUE INICIA E MANTÉM A TABELA DE ENDEREÇOS DOS CLIENTES (Dynamic Thing Configuration Protocol)
 void dtcp()
 {
   Serial.println(F("RF24/Dakota-server"));
@@ -31,9 +32,14 @@ void setup()
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println(F("RF24/Dakota-server"));
+  dtcp();
 
   // CONFIGURA PLACA E INICIA O RÁDIO
   radio.begin();
+  // DESABILITA O MODO AUTO-ACK
+  radio.setAutoAck(false);
+  //HABILITA O MODO CARGA ÚTIL DINÂMICA
+  radio.enableDynamicPayloads();
   //AMBOS OS RADIOS OUVEM OS MESMOS PIPES, MAS EM ENDEREÇOS OPOSTOS
   radio.openWritingPipe(addresses[1]);
   //ABRE UM PIPE DE LEITURA NO ENDEREÇO 0, PIPE 1
