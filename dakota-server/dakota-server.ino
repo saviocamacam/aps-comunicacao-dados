@@ -82,5 +82,31 @@ void loop()
   // MODO DE ESCUTA
   if (currentMode == listening)
   {
+    byte pipeNo;
+    while (radio.available(&pipeNo))
+    {
+      uint8_t payloadSize = radio.getDynamicPayloadSize();
+      payload = (byte *)realloc(payload, payloadSize);
+      radio.read(&payload, payloadSize);
+      byte net = payload[0];
+      byte message = payload[1];
+      if (net == 10)
+      {
+        switch (message)
+        {
+        case 0:
+          //GET ADDRESS MESSAGE
+          mac = payload[2];
+          break;
+
+        default:
+          break;
+        }
+      }
+      for (int i = 0; i < payloadSize; i++)
+      {
+        Serial.println(payload[i]);
+      }
+    }
   }
 }
