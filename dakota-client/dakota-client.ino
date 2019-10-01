@@ -5,8 +5,8 @@
 #include <avr/power.h>
 
 //DEFINES
-// #define MY_ADDR EEPROM.read(0X0A)
-#define MY_ADDR 0X00
+#define MY_ADDR EEPROM.read(0X0A)
+// #define MY_ADDR 0X00
 
 /* CONFIGURAÇÃO DE HARDWARE: CONFIGURA O RÁDIO nRF24L01 EM BARRAMENTO SPI COM PINOS 7 & 8 */
 RF24 radio(7, 8);
@@ -22,7 +22,6 @@ typedef enum
 typedef enum
 {
   getAddress,
-
 } messages;
 
 mode currentMode = listening;
@@ -41,11 +40,27 @@ void dtcp()
   {
     Serial.println(F("RF24/Dakota-client has no address"));
     mac = MY_ADDR;
-    radio.stopListening();
+    Serial.print(F("RF24/Dakota-client has "));
+    Serial.print(mac);
+    Serial.println(F(" mac"));
+    // radio.stopListening();
     Serial.println(F("RF24/sending get address message"));
     message = (byte *)realloc(message, 3);
+    message[0] = 10;
+    message[1] = 0;
+    message[2] = mac;
+    for (int i = 0; i < 3; i++)
+      Serial.print(message[i], HEX);
+    Serial.println();
+    unsigned long time = micros();
     if (radio.write(&message, sizeof(message)))
     {
+      if (!radio.available())
+      { // If nothing in the buffer, we got an ack but it is blank
+        Serial.print(F("Got blank response. round-trip delay: "));
+        Serial.print(micros() - time);
+        Serial.println(F(" microseconds"));
+      }
     }
   }
   else
@@ -73,7 +88,7 @@ void setup()
   radio.openWritingPipe(addresses[0]);
   //ABRE UM PIPE DE LEITURA NO ENDEREÇO 1, PIPE 1
   radio.openReadingPipe(1, addresses[1]);
-  
+
   radio.startListening();
 }
 
