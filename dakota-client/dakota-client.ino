@@ -5,9 +5,8 @@
 #include <avr/power.h>
 
 //DEFINES
-#define EEPROM_ADDR EEPROM[0]
-#define MY_ADDR EEPROM.read(0X00);
-// #define MY_ADDR 0X00
+// #define MY_ADDR EEPROM.read(0X0A)
+#define MY_ADDR 0X00
 
 /* CONFIGURAÇÃO DE HARDWARE: CONFIGURA O RÁDIO nRF24L01 EM BARRAMENTO SPI COM PINOS 7 & 8 */
 RF24 radio(7, 8);
@@ -24,11 +23,10 @@ typedef enum
 {
   getAddress,
 
-} message;
+} messages;
 
 mode currentMode = listening;
 byte protocol = 100;
-byte getAddress = 101;
 byte mac = 0;
 byte tp = 0;
 byte mask_destination_tp = B00001111;
@@ -61,8 +59,10 @@ void dtcp()
 void setup()
 {
   Serial.println(F("RF24/Dakota-client"));
+  Serial.println(MY_ADDR);
   // put your setup code here, to run once:
   Serial.begin(115200);
+  dtcp();
   //HABILITA O MODO CARGA ÚTIL DINÂMICA
   radio.enableDynamicPayloads();
   // DESABILITA O MODO AUTO-ACK
@@ -73,20 +73,20 @@ void setup()
   radio.openWritingPipe(addresses[0]);
   //ABRE UM PIPE DE LEITURA NO ENDEREÇO 1, PIPE 1
   radio.openReadingPipe(1, addresses[1]);
-  dtcp();
+  
   radio.startListening();
 }
 
 void loop()
 {
+  byte *payload;
   // MODO DE TRANSMISSÃO
   if (currentMode == transmitting)
   {
-    byte *payload;
     radio.stopListening(); //PARA DE OUVIR PARA PODER FALAR
 
     unsigned long time = micros(); // Record the current microsecond count
-    if (radio.write(&data, sizeof(data)))
+    if (radio.write(&message, sizeof(message)))
     {
       //VERIFICA SE BUFFER ESTA VAZIO
       if (!radio.available())
@@ -99,9 +99,9 @@ void loop()
       {
         while (radio.available())
         {
-          radio.read(&gotByte, 1);
+          radio.read(&message, 1);
           Serial.print(F("Resposta: "));
-          Serial.print(gotByte);
+          // Serial.print(message);
           currentMode = listening;
           radio.startListening();
           Serial.print(F("> modo leitura"));
@@ -130,14 +130,17 @@ void loop()
         {
         case 0:
           //GET ADDRESS MESSAGE
-          byte mac = payload[2];
+          mac = payload[2];
           break;
 
         default:
           break;
         }
       }
-      Serial.println(payload);
+      for (int i = 0; i < payloadSize; i++)
+      {
+        Serial.println(payload[i]);
+      }
     }
   }
 }
