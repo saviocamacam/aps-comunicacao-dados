@@ -5,6 +5,12 @@
 RF24 radio(7, 8);
 // ENDEREÇOS DE RÁDIO (PIPES) PARA DOIS NÓS SE COMUNICAREM
 byte addresses[][11] = {"F0F0F0F0D2", "F0F0F0F0E1"};
+
+//definindo tamanho da matriz e incializando-a com zero
+#define LINHA 15
+#define COLUNA 2
+byte tabela[LINHA][COLUNA] = {{0}};
+
 // DEFININDO OS MODOS QUE O NÓ PODE ASSUMIR
 typedef enum
 {
@@ -15,6 +21,25 @@ typedef enum
 
 mode currentMode = listening;
 const char *myAddress;
+ 
+ //funções manipulcao matriz de ITs
+byte getIt(byte mac){
+  for(int i = 1; i < LINHA; i ++){
+      if(tabela[i] == mac){
+        return i;
+      }
+  }
+  return addIt(mac);
+}
+
+byte addIt(byte mac){
+  for (int i = 0; i < LINHA; i++){
+    if(tabela[i] == 0){
+      tabela[i] = mac;
+      return i;
+    }
+  }
+}
 
 //FUNÇÃO QUE INICIA E MANTÉM A TABELA DE ENDEREÇOS DOS CLIENTES (Dynamic Thing Configuration Protocol)
 void dtcp()
