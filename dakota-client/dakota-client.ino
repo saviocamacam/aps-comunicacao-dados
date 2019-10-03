@@ -77,13 +77,15 @@ void setup()
   Serial.println(MY_ADDR);
   // put your setup code here, to run once:
   Serial.begin(115200);
+// CONFIGURA PLACA E INICIA O RÁDIO
+  radio.begin();
+
   dtcp();
   //HABILITA O MODO CARGA ÚTIL DINÂMICA
   radio.enableDynamicPayloads();
   // DESABILITA O MODO AUTO-ACK
   radio.setAutoAck(false);
-  // CONFIGURA PLACA E INICIA O RÁDIO
-  radio.begin();
+  
   //AMBOS OS RADIOS OUVEM OS MESMOS PIPES, MAS EM ENDEREÇOS OPOSTOS
   radio.openWritingPipe(addresses[0]);
   //ABRE UM PIPE DE LEITURA NO ENDEREÇO 1, PIPE 1
