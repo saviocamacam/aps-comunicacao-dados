@@ -14,27 +14,32 @@ byte tabela[LINHA][COLUNA] = {{0}};
 // DEFININDO OS MODOS QUE O NÓ PODE ASSUMIR
 typedef enum
 {
-  bla = 200,
   transmitting = 1,
   listening
 } mode;
 
 mode currentMode = listening;
 const char *myAddress;
- 
- //funções manipulcao matriz de ITs
-byte getIt(byte mac){
-  for(int i = 1; i < LINHA; i ++){
-      if(tabela[i] == mac){
-        return i;
-      }
+
+//funções manipulcao matriz de ITs
+byte getIt(byte mac)
+{
+  for (int i = 1; i < LINHA; i++)
+  {
+    if (tabela[i] == mac)
+    {
+      return i;
+    }
   }
   return addIt(mac);
 }
 
-byte addIt(byte mac){
-  for (int i = 0; i < LINHA; i++){
-    if(tabela[i] == 0){
+byte addIt(byte mac)
+{
+  for (int i = 0; i < LINHA; i++)
+  {
+    if (tabela[i] == 0)
+    {
       tabela[i] = mac;
       return i;
     }
@@ -57,7 +62,6 @@ void setup()
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println(F("RF24/Dakota-server"));
-  dtcp();
 
   // CONFIGURA PLACA E INICIA O RÁDIO
   radio.begin();
@@ -70,6 +74,8 @@ void setup()
   //ABRE UM PIPE DE LEITURA NO ENDEREÇO 0, PIPE 1
   radio.openReadingPipe(1, addresses[0]);
   radio.startListening();
+
+  dtcp();
 }
 
 void loop()
@@ -82,12 +88,14 @@ void loop()
   // MODO DE ESCUTA
   if (currentMode == listening)
   {
+    Serial.println(F("RF24/Dakota-server in listening mode"));
     byte pipeNo;
     while (radio.available(&pipeNo))
     {
       uint8_t payloadSize = radio.getDynamicPayloadSize();
       payload = (byte *)realloc(payload, payloadSize);
       radio.read(&payload, payloadSize);
+
       byte net = payload[0];
       byte message = payload[1];
       if (net == 10)
