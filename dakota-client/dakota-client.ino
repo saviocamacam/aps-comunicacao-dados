@@ -81,11 +81,11 @@ void setup()
   // CONFIGURA PLACA E INICIA O RÁDIO
   radio.begin();
 
+  dtcp();
   //HABILITA O MODO CARGA ÚTIL DINÂMICA
   radio.enableDynamicPayloads();
   // DESABILITA O MODO AUTO-ACK
   radio.setAutoAck(false);
-  radio.setChannel(50);
 
   //AMBOS OS RADIOS OUVEM OS MESMOS PIPES, MAS EM ENDEREÇOS OPOSTOS
   radio.openWritingPipe(addresses[0]);

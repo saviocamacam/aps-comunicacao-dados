@@ -9,7 +9,7 @@ byte addresses[][11] = {"F0F0F0F0D2", "F0F0F0F0E1"};
 //definindo tamanho da matriz e incializando-a com zero
 #define LINHA 15
 #define COLUNA 2
-byte tabela[LINHA][COLUNA] = {{0}};
+byte tabela[LINHA][COLUNA] = {{0x0}};
 
 // DEFININDO OS MODOS QUE O NÓ PODE ASSUMIR
 typedef enum
@@ -20,13 +20,14 @@ typedef enum
 
 mode currentMode = listening;
 const char *myAddress;
+byte mac;
 
 //funções manipulcao matriz de ITs
 byte getIt(byte mac)
 {
   for (int i = 1; i < LINHA; i++)
   {
-    if (tabela[i] == mac)
+    if (tabela[i][0] == mac)
     {
       return i;
     }
@@ -38,9 +39,9 @@ byte addIt(byte mac)
 {
   for (int i = 0; i < LINHA; i++)
   {
-    if (tabela[i] == 0)
+    if (tabela[i][0] == 0)
     {
-      tabela[i] = mac;
+      tabela[i][0] = mac;
       return i;
     }
   }
@@ -62,11 +63,14 @@ void setup()
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println(F("RF24/Dakota-server"));
-
   // CONFIGURA PLACA E INICIA O RÁDIO
   radio.begin();
+
   // DESABILITA O MODO AUTO-ACK
   radio.setAutoAck(false);
+
+  //mudando o canal
+  radio.setChannel(0);
   //HABILITA O MODO CARGA ÚTIL DINÂMICA
   radio.enableDynamicPayloads();
   //AMBOS OS RADIOS OUVEM OS MESMOS PIPES, MAS EM ENDEREÇOS OPOSTOS
@@ -74,13 +78,12 @@ void setup()
   //ABRE UM PIPE DE LEITURA NO ENDEREÇO 0, PIPE 1
   radio.openReadingPipe(1, addresses[0]);
   radio.startListening();
-
   dtcp();
 }
 
 void loop()
 {
-
+  byte *payload;
   // MODO DE TRANSMISSÃO
   if (currentMode == transmitting)
   {
@@ -89,13 +92,17 @@ void loop()
   if (currentMode == listening)
   {
     Serial.println(F("RF24/Dakota-server in listening mode"));
-    byte pipeNo;
-    while (radio.available(&pipeNo))
+
+    byte pipeNo, gotByte;
+    while (radio.available())
     {
+      Serial.println("dakotaRF24 - listening mode WHILE");
+
       uint8_t payloadSize = radio.getDynamicPayloadSize();
       payload = (byte *)realloc(payload, payloadSize);
       radio.read(&payload, payloadSize);
-
+      gotByte += 1;
+      radio.writeAckPayload(pipeNo, &gotByte, 1);
       byte net = payload[0];
       byte message = payload[1];
       if (net == 10)
