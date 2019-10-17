@@ -79,6 +79,7 @@ void setup()
   Serial.begin(115200);
 // CONFIGURA PLACA E INICIA O RÁDIO
   radio.begin();
+  radio.setChannel(60);
 
   dtcp();
   //HABILITA O MODO CARGA ÚTIL DINÂMICA

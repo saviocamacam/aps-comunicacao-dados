@@ -1,6 +1,6 @@
 {
     "board": "arduino:avr:nano",
     "configuration": "cpu=atmega328old",
-    "port": "/dev/ttyUSB0",
-    "sketch": "dakota-server/dakota-server.ino"
+    "sketch": "dakota-server/dakota-server.ino",
+    "port": "/dev/ttyUSB1"
 }
