@@ -72,6 +72,7 @@ void setup()
   // DESABILITA O MODO AUTO-ACK
   radio.setAutoAck(false);
 
+   radio.enableAckPayload();
   //HABILITA O MODO CARGA ÚTIL DINÂMICA
   radio.enableDynamicPayloads();
   //AMBOS OS RADIOS OUVEM OS MESMOS PIPES, MAS EM ENDEREÇOS OPOSTOS
@@ -123,11 +124,15 @@ void loop()
           break;
         }
       }
+      Serial.print("size = ");
+
+      Serial.println(payloadSize);
       for (int i = 0; i < payloadSize; i++)
       {
         Serial.print("paylod[i] = ");
         Serial.println(payload[i],HEX);
       }
+
     }
   }
 }
