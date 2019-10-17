@@ -16,7 +16,6 @@ byte counter = 1;
 // DEFININDO OS MODOS QUE O NÓ PODE ASSUMIR
 typedef enum
 {
-  bla = 200,
   transmitting = 1,
   listening
 } mode;
@@ -24,20 +23,26 @@ typedef enum
 mode currentMode = listening;
 const char *myAddress;
 byte mac;
- 
- //funções manipulcao matriz de ITs
-byte getIt(byte mac){
-  for(int i = 1; i < LINHA; i ++){
-      if(tabela[i][0] == mac){
-        return i;
-      }
+
+//funções manipulcao matriz de ITs
+byte getIt(byte mac)
+{
+  for (int i = 1; i < LINHA; i++)
+  {
+    if (tabela[i][0] == mac)
+    {
+      return i;
+    }
   }
   return addIt(mac);
 }
 
-byte addIt(byte mac){
-  for (int i = 0; i < LINHA; i++){
-    if(tabela[i][0] == 0){
+byte addIt(byte mac)
+{
+  for (int i = 0; i < LINHA; i++)
+  {
+    if (tabela[i][0] == 0)
+    {
       tabela[i][0] = mac;
       return i;
     }
@@ -60,11 +65,10 @@ void setup()
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println(F("RF24/Dakota-server"));
-   // CONFIGURA PLACA E INICIA O RÁDIO
+  // CONFIGURA PLACA E INICIA O RÁDIO
   radio.begin();
   radio.setChannel(60);
 
- 
   // DESABILITA O MODO AUTO-ACK
   radio.setAutoAck(false);
 
@@ -85,7 +89,6 @@ void loop()
   // MODO DE TRANSMISSÃO
   if (currentMode == transmitting)
   {
-
   }
   // MODO DE ESCUTA
   if (currentMode == listening)
@@ -98,13 +101,13 @@ void loop()
     // Serial.println(pipeNo);
     while (radio.available(&pipeNo))
     {
-  Serial.println("dakotaRF24 - listening mode WHILE");
+      Serial.println("dakotaRF24 - listening mode WHILE");
 
       uint8_t payloadSize = radio.getDynamicPayloadSize();
       payload = (byte *)realloc(payload, payloadSize);
       radio.read(&payload, payloadSize);
       gotByte += 1;
-      radio.writeAckPayload(pipeNo, &gotByte, 1);	
+      radio.writeAckPayload(pipeNo, &gotByte, 1);
       byte net = payload[0];
       byte message = payload[1];
       if (net == 10)

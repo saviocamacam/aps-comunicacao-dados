@@ -36,14 +36,14 @@ byte *message;
 void dtcp()
 {
   Serial.println(F("RF24/Dakota-client setup DTCP Address"));
-  if (tp == 0)
+  while (tp == 0)
   {
     Serial.println(F("RF24/Dakota-client has no address"));
     mac = MY_ADDR;
     Serial.print(F("RF24/Dakota-client has "));
     Serial.print(mac);
     Serial.println(F(" mac"));
-    // radio.stopListening();
+    radio.stopListening();
     Serial.println(F("RF24/sending get address message"));
     message = (byte *)realloc(message, 3);
     message[0] = 10;
@@ -55,6 +55,7 @@ void dtcp()
     unsigned long time = micros();
     if (radio.write(&message, sizeof(message)))
     {
+      radio.startListening();
       if (!radio.available())
       { // If nothing in the buffer, we got an ack but it is blank
         Serial.print(F("Got blank response. round-trip delay: "));
@@ -62,22 +63,22 @@ void dtcp()
         Serial.println(F(" microseconds"));
       }
     }
+    else
+    {
+      Serial.println(F("ATL - Falha ao enviar"));
+    }
   }
-  else
-  {
-    Serial.print(F("RF24/Dakota-client has "));
-    Serial.print(mac);
-    Serial.println(F(" address"));
-  }
+  Serial.print(F("RF24/Dakota-client has "));
+  Serial.print(mac);
+  Serial.println(F(" address"));
 }
 
 void setup()
 {
   Serial.println(F("RF24/Dakota-client"));
   Serial.println(MY_ADDR);
-  // put your setup code here, to run once:
   Serial.begin(115200);
-// CONFIGURA PLACA E INICIA O RÁDIO
+  // CONFIGURA PLACA E INICIA O RÁDIO
   radio.begin();
   radio.setChannel(60);
 
@@ -86,13 +87,14 @@ void setup()
   radio.enableDynamicPayloads();
   // DESABILITA O MODO AUTO-ACK
   radio.setAutoAck(false);
-  
+
   //AMBOS OS RADIOS OUVEM OS MESMOS PIPES, MAS EM ENDEREÇOS OPOSTOS
   radio.openWritingPipe(addresses[0]);
   //ABRE UM PIPE DE LEITURA NO ENDEREÇO 1, PIPE 1
   radio.openReadingPipe(1, addresses[1]);
 
   radio.startListening();
+  dtcp();
 }
 
 void loop()
@@ -121,7 +123,7 @@ void loop()
           Serial.print(F("Resposta: "));
           // Serial.print(message);
           currentMode = listening;
-          radio.startListening();
+          // radio.startListening();
           Serial.print(F("> modo leitura"));
         }
       }
