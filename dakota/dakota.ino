@@ -14,6 +14,7 @@
 
 #include <SPI.h>
 #include "RF24.h"
+#include "printf.h"
 
 /****************** User Config ***************************/
 /***      Set this radio as radio number 0 or 1         ***/
@@ -39,6 +40,8 @@ byte counter = 1; // A single byte to keep track of the data being sent back and
 
 void setup()
 {
+//  printf_begin();
+//  radio.printDetails();
 
   Serial.begin(115200);
   Serial.println(F("RF24/examples/GettingStarted_CallResponse"));
@@ -47,6 +50,7 @@ void setup()
   // Setup and configure radio
 
   radio.begin();
+  radio.setChannel(60);
 
   radio.enableAckPayload();      // Allow optional ack payloads
   radio.enableDynamicPayloads(); // Ack payloads are dynamic payloads
@@ -64,7 +68,6 @@ void setup()
   radio.startListening(); // Start listening
 
   radio.writeAckPayload(1, &counter, 1); // Pre-load an ack-paylod into the FIFO buffer for pipe 1
-  //radio.printDetails();
 }
 
 void loop(void)
