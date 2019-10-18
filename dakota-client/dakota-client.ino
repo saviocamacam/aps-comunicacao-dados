@@ -31,6 +31,8 @@ byte tp = 0;
 byte mask_destination_tp = B00001111;
 byte mask_source_tp = B11110000;
 byte *message;
+byte counter = 1;
+byte *payload;
 
 //FUNÇÃO QUE VERIFICA SE JÁ TENHO ENDEREÇO. SE NÃO, EU PEÇO; (Dynamic Thing Configuration Protocol)
 void dtcp()
@@ -53,14 +55,25 @@ void dtcp()
       Serial.print(message[i], HEX);
     Serial.println();
     unsigned long time = micros();
-    if (radio.write(&message, sizeof(message)))
+    if (radio.write(message, 3))
     {
       radio.startListening();
+      // delay(50);
       if (!radio.available())
       { // If nothing in the buffer, we got an ack but it is blank
         Serial.print(F("Got blank response. round-trip delay: "));
         Serial.print(micros() - time);
         Serial.println(F(" microseconds"));
+      }
+      else
+      {
+        byte gotByte, pipeNo;
+        while (radio.available(&pipeNo))
+        {
+          radio.read(&gotByte, 1);
+          Serial.print(F("Got response "));
+          Serial.print(gotByte);
+        }
       }
     }
     else
@@ -80,9 +93,10 @@ void setup()
   Serial.begin(115200);
   // CONFIGURA PLACA E INICIA O RÁDIO
   radio.begin();
+  radio.setChannel(60);
 
-  dtcp();
   //HABILITA O MODO CARGA ÚTIL DINÂMICA
+  radio.enableAckPayload();
   radio.enableDynamicPayloads();
   // DESABILITA O MODO AUTO-ACK
   radio.setAutoAck(false);
@@ -91,14 +105,15 @@ void setup()
   radio.openWritingPipe(addresses[0]);
   //ABRE UM PIPE DE LEITURA NO ENDEREÇO 1, PIPE 1
   radio.openReadingPipe(1, addresses[1]);
-
   radio.startListening();
+
+  radio.writeAckPayload(1, &counter, 1);
   dtcp();
 }
 
 void loop()
 {
-  byte *payload;
+
   // MODO DE TRANSMISSÃO
   if (currentMode == transmitting)
   {
