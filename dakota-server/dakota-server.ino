@@ -62,6 +62,8 @@ const char *getMacAddress()
 
 void setup()
 {
+    unsigned long previousMillis = millis();
+
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println(F("RF24/Dakota-server"));
@@ -86,7 +88,7 @@ void setup()
 
 void loop()
 {
-  byte *payload;
+  byte payload[30];
   // MODO DE TRANSMISSÃO
   if (currentMode == transmitting)
   {
@@ -94,7 +96,7 @@ void loop()
   // MODO DE ESCUTA
   if (currentMode == listening)
   {
-  Serial.println("dakotaRF24 -- listening mode");
+  //Serial.println("dakotaRF24 -- listening mode");
   // Serial.println(radio.available());
     byte pipeNo, gotByte;
     // Serial.println("pipeNo\n");
@@ -102,11 +104,11 @@ void loop()
     // Serial.println(pipeNo);
     while (radio.available(&pipeNo))
     {
-      Serial.println("dakotaRF24 - listening mode WHILE");
+      Serial.println("dakotaRF24 - listening mode WHILE - ");
 
       uint8_t payloadSize = radio.getDynamicPayloadSize();
-      payload = (byte *)realloc(payload, payloadSize);
-      radio.read(&payload, payloadSize);
+      // payload = (byte *)realloc(payload, payloadSize);
+      radio.read(payload, payloadSize);
       gotByte += 1;
       radio.writeAckPayload(pipeNo, &gotByte, 1);
       byte net = payload[0];
@@ -126,11 +128,24 @@ void loop()
       }
       Serial.print("size = ");
 
+    unsigned long currentMillis = millis();
+
       Serial.println(payloadSize);
       for (int i = 0; i < payloadSize; i++)
       {
-        Serial.print("paylod[i] = ");
+        if(i == 2){
+           Serial.print("paylod[");
+        Serial.print(i);
+        Serial.print("] = ");
         Serial.println(payload[i],HEX);
+        }
+        else{
+Serial.print("paylod[");
+        Serial.print(i);
+        Serial.print("] = ");
+        Serial.println((char)payload[i]);
+        }
+        
       }
 
     }
