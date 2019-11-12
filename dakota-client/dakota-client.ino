@@ -11,7 +11,7 @@
 /* CONFIGURAÇÃO DE HARDWARE: CONFIGURA O RÁDIO nRF24L01 EM BARRAMENTO SPI COM PINOS 7 & 8 */
 RF24 radio(7, 8);
 // ENDEREÇOS DE RÁDIO (PIPES) PARA DOIS NÓS SE COMUNICAREM
-byte addresses[][11] = {"F0F0F0F0E1", "F0F0F0F0D2"};
+byte addresses[][11] = {"1Node", "2Node"};
 // DEFININDO OS MODOS QUE O NÓ PODE ASSUMIR
 typedef enum
 {
@@ -48,17 +48,21 @@ void dtcp()
     radio.stopListening();
     Serial.println(F("RF24/sending get address message"));
     message = (byte *)realloc(message, 3);
-    message[0] = 10;
-    message[1] = 0;
-    message[2] = mac;
-    for (int i = 0; i < 3; i++)
-      Serial.print(message[i], HEX);
-    Serial.println();
+    message[0] = 0X10;
+    message[1] = 0X10;
+    message[2] = 0X10;
+
+    char str[8] = {'A', 'B', mac};
+    // for (int i = 0; i < 3; i++)
+    //   Serial.print(str[i]);
+    Serial.println(mac, HEX);
     unsigned long time = micros();
-    if (radio.write(message, 3))
+    Serial.println(F("Got response bla 1"));
+    if (radio.write(str, 3))
     {
+      Serial.println(F("Got response bla 2"));
       radio.startListening();
-      // delay(50);
+      delay(5000);
       if (!radio.available())
       { // If nothing in the buffer, we got an ack but it is blank
         Serial.print(F("Got blank response. round-trip delay: "));
@@ -67,6 +71,7 @@ void dtcp()
       }
       else
       {
+        Serial.println(F("Got response bla 3"));
         byte gotByte, pipeNo;
         while (radio.available(&pipeNo))
         {

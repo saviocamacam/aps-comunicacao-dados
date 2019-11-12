@@ -72,7 +72,7 @@ void setup()
   // DESABILITA O MODO AUTO-ACK
   radio.setAutoAck(false);
 
-   radio.enableAckPayload();
+  radio.enableAckPayload();
   //HABILITA O MODO CARGA ÚTIL DINÂMICA
   radio.enableDynamicPayloads();
   //AMBOS OS RADIOS OUVEM OS MESMOS PIPES, MAS EM ENDEREÇOS OPOSTOS
@@ -94,8 +94,8 @@ void loop()
   // MODO DE ESCUTA
   if (currentMode == listening)
   {
-  Serial.println("dakotaRF24 -- listening mode");
-  // Serial.println(radio.available());
+    Serial.println("dakotaRF24 -- listening mode");
+    // Serial.println(radio.available());
     byte pipeNo, gotByte;
     // Serial.println("pipeNo\n");
 
@@ -130,9 +130,8 @@ void loop()
       for (int i = 0; i < payloadSize; i++)
       {
         Serial.print("paylod[i] = ");
-        Serial.println(payload[i],HEX);
+        Serial.println(payload[i], HEX);
       }
-
     }
   }
 }
