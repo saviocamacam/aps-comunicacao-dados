@@ -4,7 +4,7 @@
 #include <avr/sleep.h>
 #include <avr/power.h>
 
-//DEFINES
+//DEFINESm
 #define MY_ADDR EEPROM.read(0X0A)
 // #define MY_ADDR 0X00
 
@@ -52,7 +52,7 @@ void dtcp()
     message[1] = 0X10;
     message[2] = 0X10;
 
-    char str[8] = {'A', 'B', mac};
+    char str[8] = {'L', 'J', 'M'};
     // for (int i = 0; i < 3; i++)
     //   Serial.print(str[i]);
     Serial.println(mac, HEX);

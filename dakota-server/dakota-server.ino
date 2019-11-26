@@ -1,6 +1,11 @@
 #include <SPI.h>
 #include "RF24.h"
+/*
+  letras de controle:
+  L = REDE
+  S = Devolver endereços da rede
 
+*/
 /* CONFIGURAÇÃO DE HARDWARE: CONFIGURA O RÁDIO nRF24L01 EM BARRAMENTO SPI COM PINOS 7 & 8 */
 RF24 radio(7, 8);
 // ENDEREÇOS DE RÁDIO (PIPES) PARA DOIS NÓS SE COMUNICAREM
@@ -13,6 +18,17 @@ byte addresses[][6] = {"1Node", "2Node"};
 #define COLUNA 2
 byte tabela[LINHA][COLUNA] = {{0x0}};
 byte counter = 1;
+
+byte enderecos[4] = {0x18, 0x1A, 0x2E, 0X05};
+// enderecos[0] = 0x18;
+// enderecos[1] = 0x1A; //servidor
+// enderecos[2] = 0x2E;
+// enderecos[3] = 0x05;
+
+
+
+
+
 // DEFININDO OS MODOS QUE O NÓ PODE ASSUMIR
 typedef enum
 {
@@ -111,15 +127,26 @@ void loop()
       radio.read(payload, payloadSize);
       gotByte += 1;
       radio.writeAckPayload(pipeNo, &gotByte, 1);
-      byte net = payload[0];
+      char net = payload[0];
       byte message = payload[1];
-      if (net == 10)
+      if (net == 'L')
       {
         switch (message)
         {
-        case 0:
+        case 'S':
           //GET ADDRESS MESSAGE
+          currentMode = transmitting;
+          char str[8] = {'L', 'S', enderecos};
+          if (radio.write(str, 8)){
+             Serial.println(F("Got response bla 2"));
+             radio.startListening();
+             delay(5000);
+
+    }
+          // enderecos
           mac = payload[2];
+          // byte ip = getIt(mac);
+
           break;
 
         default:
