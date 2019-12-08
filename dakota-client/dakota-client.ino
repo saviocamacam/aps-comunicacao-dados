@@ -38,7 +38,7 @@ byte *payload;
 void dtcp()
 {
   Serial.println(F("RF24/Dakota-client setup DTCP Address"));
-  while (tp == 0)
+  while (true)
   {
     Serial.println(F("RF24/Dakota-client has no address"));
     mac = MY_ADDR;
@@ -52,7 +52,7 @@ void dtcp()
     message[1] = 0X10;
     message[2] = 0X10;
 
-    char str[8] = {'L', 'J', 'M'};
+    char str[8] = {'L', 'S', 'O'};
     // for (int i = 0; i < 3; i++)
     //   Serial.print(str[i]);
     Serial.println(mac, HEX);
@@ -67,17 +67,30 @@ void dtcp()
       { // If nothing in the buffer, we got an ack but it is blank
         Serial.print(F("Got blank response. round-trip delay: "));
         Serial.print(micros() - time);
-        Serial.println(F(" microseconds"));
+        Serial.println(F(" microseconds"));//
       }
       else
       {
         Serial.println(F("Got response bla 3"));
-        byte gotByte, pipeNo;
+        byte gotByte[3], pipeNo;
         while (radio.available(&pipeNo))
         {
-          radio.read(&gotByte, 1);
+          if(gotByte[0] == 'L'){
+            Serial.println("Entrei no if L");
+            if(gotByte[1] == 'S'){
+              Serial.println("Entrei no if S");
+              if(gotByte[2] == 'Y'){
+                Serial.println("Entrei no if Y");
+              }
+            }
+          }
+          radio.read(&gotByte, 3);
           Serial.print(F("Got response "));
-          Serial.print(gotByte);
+          Serial.println((char)gotByte[0]);
+          Serial.println((char)gotByte[1]);
+          Serial.println((char)gotByte[2]);
+
+          break;
         }
       }
     }
@@ -89,6 +102,13 @@ void dtcp()
   Serial.print(F("RF24/Dakota-client has "));
   Serial.print(mac);
   Serial.println(F(" address"));
+  radio.stopListening();
+  currentMode = listening;
+}
+
+void ouvir(){
+
+  
 }
 
 void setup()
@@ -122,63 +142,102 @@ void loop()
   // MODO DE TRANSMISSÃO
   if (currentMode == transmitting)
   {
-    radio.stopListening(); //PARA DE OUVIR PARA PODER FALAR
+    // Serial.println("OI if transmitting");
+    // radio.stopListening(); //PARA DE OUVIR PARA PODER FALAR
 
-    unsigned long time = micros(); // Record the current microsecond count
-    if (radio.write(&message, sizeof(message)))
-    {
-      //VERIFICA SE BUFFER ESTA VAZIO
-      if (!radio.available())
-      {
-        Serial.print(F("Resposta em branco. Espera: "));
-        Serial.print(micros() - time);
-        Serial.println(F(" micro-segundos"));
-      }
-      else
-      {
-        while (radio.available())
-        {
-          radio.read(&message, 1);
-          Serial.print(F("Resposta: "));
-          // Serial.print(message);
-          currentMode = listening;
-          // radio.startListening();
-          Serial.print(F("> modo leitura"));
-        }
-      }
-    }
-    else
-    {
-      Serial.println(F("ATL - Falha ao enviar"));
-    }
+    // unsigned long time = micros(); // Record the current microsecond count
+    // if (radio.write(&message, sizeof(message)))
+    // {
+    //   //VERIFICA SE BUFFER ESTA VAZIO
+    //   if (!radio.available())
+    //   {
+    //     Serial.print(F("Resposta em branco. Espera: "));
+    //     Serial.print(micros() - time);
+    //     Serial.println(F(" micro-segundos"));
+    //   }
+    //   else
+    //   {
+    //     while (radio.available())
+    //     {
+    //       radio.read(&message, 1);
+    //       Serial.print(F("Resposta: "));
+    //       // Serial.print(message);
+    //       currentMode = listening;
+    //       // radio.startListening();
+    //       Serial.print(F("> modo leitura"));
+    //     }
+    //   }
+    // }
+    // else
+    // {
+    //   Serial.println(F("ATL - Falha ao enviar"));
+    // }
   }
   // MODO DE ESCUTA
   if (currentMode == listening)
   {
-    byte pipeNo;
+    byte pipeNo, gotByte;
+    // Serial.println("pipeNo\n");
+
+    // Serial.println(pipeNo);
     while (radio.available(&pipeNo))
     {
+      Serial.println("dakotaRF24 - listening mode WHILE - ");
+
       uint8_t payloadSize = radio.getDynamicPayloadSize();
-      payload = (byte *)realloc(payload, payloadSize);
-      radio.read(&payload, payloadSize);
-      byte net = payload[0];
+      // payload = (byte *)realloc(payload, payloadSize);
+      radio.read(payload, payloadSize);
+      gotByte += 1;
+      radio.writeAckPayload(pipeNo, &gotByte, 1);
+      char net = payload[0];
       byte message = payload[1];
-      if (net == 10)
+      if (net == 'L')
       {
+             Serial.println(F("Got IF L"));
+
         switch (message)
         {
-        case 0:
+        case 'S':
           //GET ADDRESS MESSAGE
+          currentMode = transmitting;
+          char str[8] = {'L', 'S', 'J'};
+          if (radio.write(str, 8)){
+             Serial.println(F("Got response bla 2"));
+             radio.startListening();
+             delay(100);
+
+          }     
+          // enderecos
           mac = payload[2];
+          // byte ip = getIt(mac);
+
           break;
 
         default:
           break;
         }
       }
+      Serial.print("size = ");
+
+      unsigned long currentMillis = millis();
+
+      Serial.println(payloadSize);
       for (int i = 0; i < payloadSize; i++)
       {
-        Serial.println(payload[i]);
+        if (i == 2)
+        {
+          Serial.print("paylod[");
+          Serial.print(i);
+          Serial.print("] = ");
+          Serial.println(payload[i], HEX);
+        }
+        else
+        {
+          Serial.print("paylod[");
+          Serial.print(i);
+          Serial.print("] = ");
+          Serial.println((char)payload[i]);
+        }
       }
     }
   }

@@ -4,7 +4,6 @@
   letras de controle:
   L = REDE
   S = Devolver endereços da rede
-
 */
 /* CONFIGURAÇÃO DE HARDWARE: CONFIGURA O RÁDIO nRF24L01 EM BARRAMENTO SPI COM PINOS 7 & 8 */
 RF24 radio(7, 8);
@@ -107,7 +106,15 @@ void loop()
   byte payload[30];
   // MODO DE TRANSMISSÃO
   if (currentMode == transmitting)
-  {
+  { 
+    char str[8] = {'L', 'S', 'Y'};
+    radio.stopListening();
+    if (radio.write(str, 8)){
+        Serial.println(F("Got response bla 2"));
+        radio.startListening();
+        delay(5000);
+        currentMode = listening;
+      }
   }
   // MODO DE ESCUTA
   if (currentMode == listening)
@@ -131,21 +138,16 @@ void loop()
       byte message = payload[1];
       if (net == 'L')
       {
+        //Serial.println("oi");
         switch (message)
         {
         case 'S':
           //GET ADDRESS MESSAGE
+          //Serial.println("oi s");
           currentMode = transmitting;
-          char str[8] = {'L', 'S', enderecos};
-          if (radio.write(str, 8)){
-             Serial.println(F("Got response bla 2"));
-             radio.startListening();
-             delay(5000);
-
-    }
           // enderecos
           mac = payload[2];
-          // byte ip = getIt(mac);
+          byte ip = getIt(mac);
 
           break;
 
@@ -160,20 +162,20 @@ void loop()
       Serial.println(payloadSize);
       for (int i = 0; i < payloadSize; i++)
       {
-        if (i == 2)
-        {
-          Serial.print("paylod[");
-          Serial.print(i);
-          Serial.print("] = ");
-          Serial.println(payload[i], HEX);
-        }
-        else
-        {
+        //if (i == 2)
+        //{
+          //Serial.print("paylod[");
+          //Serial.print(i);
+          //Serial.print("] = ");
+          //Serial.println(payload[i]);
+        //}
+        //else
+        //{
           Serial.print("paylod[");
           Serial.print(i);
           Serial.print("] = ");
           Serial.println((char)payload[i]);
-        }
+        //}
       }
     }
   }
